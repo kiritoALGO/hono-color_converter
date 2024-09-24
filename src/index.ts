@@ -1,18 +1,25 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.toml`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+import { Hono } from 'hono'
+import { keyword } from 'color-convert'
+import { KEYWORD } from 'color-convert/conversions'
 
-export default {
-	async fetch(request, env, ctx): Promise<Response> {
-		return new Response('Hello World!');
-	},
-} satisfies ExportedHandler<Env>;
+const app = new Hono()
+
+app.get('/', (c) => c.text('hello world'))
+
+app.get('/:colorformat/:colorname', (ctx) => {
+	const colorname: KEYWORD = ctx.req.param("colorname") as KEYWORD
+	const colorformat: string = ctx.req.param("colorformat")
+
+	if(colorformat == "hex"){
+		return ctx.text("#" + keyword.hex(colorname));
+	}
+	else if(colorformat == "rgb"){
+		return ctx.text("(" + keyword.rgb(colorname).toString() + ")");
+	}
+	else{
+		return ctx.text("Invalid color format. Use 'hex' or 'rgb'.");
+	}
+})
+
+
+export default app
